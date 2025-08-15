@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mock规则配置</title>
+  <link rel="icon" href="../images/icon.png" />
+  <style>
+    :root {
+      --primary: #1677ff;
+      --danger: #ff4d4f;
+      --text: #333;
+      --muted: #999;
+      --bg: #fff;
+      --line: #f0f0f0;
+    }
+
+    /* 移除深色主题变量 */
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font: 15px/1.6 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial;
+      color: var(--text);
+      background: #f5f5f5;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #1d1d1d;
+      color: #fff;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn.danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 999px;
+      transition: .2s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 2px;
+      top: 2px;
+      background: #fff;
+      border-radius: 50%;
+      transition: .2s;
+    }
+
+    .switch input:checked+.slider {
+      background: var(--primary);
+    }
+
+    .switch input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    .container {
+      padding: 16px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-bottom: 8px;
+      position: sticky;
+      top: 52px;
+      background: var(--bg);
+      z-index: 3;
+      padding: 6px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+
+    .search {
+      width: 420px;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    /* 导航条内搜索框：与请求记录页一致（固定 360px） */
+    header .search {
+      width: 360px;
+      margin-right: 12px;
+      min-height: 28px;
+      flex: 0 0 auto;
+    }
+
+    /* 防止导航条元素换行挤压，保持一行显示 */
+    header .row {
+      flex-wrap: nowrap;
+    }
+
+    header label.row {
+      white-space: nowrap;
+    }
+
+    header .btn {
+      white-space: nowrap;
+    }
+
+    /* 统一复选框尺寸（与请求记录页一致） */
+    .checkbox {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* 与请求记录页一致的 tabs 样式 */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid #e5e5e5;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+      position: sticky;
+      top: 56px;
+      background: var(--bg);
+      z-index: 80;
+      padding: 6px 0;
+    }
+
+    .tab-item {
+      padding: 8px 14px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 6px 6px 0 0;
+      user-select: none;
+      color: #555;
+      transition: all .2s ease;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tab-item:hover {
+      background: #f5f5f5;
+    }
+
+    .tab-item.active {
+      color: var(--primary);
+      background: #e6f4ff;
+      border-color: var(--primary);
+      box-shadow: inset 0 -2px 0 var(--primary);
+    }
+
+    .tab-badge {
+      display: inline-block;
+      margin-left: 8px;
+      min-width: 18px;
+      height: 18px;
+      line-height: 18px;
+      padding: 0 6px;
+      font-size: 12px;
+      border-radius: 9px;
+      background: #f0f5ff;
+      color: var(--primary);
+      text-align: center;
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .tab-badge.pulse {
+      transform: scale(1.15);
+      background: #e6f4ff;
+    }
+
+    .tab-item.active .tab-badge {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .tabs .close {
+      margin-left: 6px;
+      color: #aaa;
+      cursor: pointer;
+    }
+
+    /* 与请求记录页一致的 group-actions */
+    .group-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 12px;
+      padding: 8px 0;
+      position: sticky;
+      top: 56px;
+      background: var(--bg);
+      z-index: 90;
+      border-bottom: 1px solid #f0f0f0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg);
+      border-radius: 8px;
+      overflow: visible;
+      table-layout: fixed;
+    }
+
+    #headerSelect {
+      margin-left: 6px;
+    }
+
+    .table th,
+    .table td {
+      border-top: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    .table thead th {
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 70;
+    }
+
+    .table th:nth-child(5),
+    .table td:nth-child(5) {
+      max-width: 640px;
+    }
+
+    .muted {
+      color: #888;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f5f5f5;
+      font-size: 12px;
+    }
+
+    .op {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn,
+    .op .btn {
+      white-space: nowrap;
+    }
+
+    .op .btn {
+      height: 28px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .btn:not(.primary):hover {
+      background: #f7fbff;
+    }
+
+    .btn.primary:hover {
+      background: var(--primary);
+      color: #fff;
+      filter: brightness(0.96);
+    }
+
+    .btn.danger:hover {
+      background: #fff1f0;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border-color: #d0e3ff;
+      color: var(--primary);
+    }
+
+    .btn.ghost:hover {
+      background: #eef5ff;
+      border-color: var(--primary);
+    }
+
+    /* 交互增强：行 hover/选中效果，与请求记录页面风格一致 */
+    .table tbody tr {
+      transition: background .2s ease, box-shadow .2s ease;
+    }
+
+    .table tbody tr td:first-child {
+      border-left: 3px solid transparent;
+      transition: border-color .2s ease;
+    }
+
+    .table tbody tr:hover td {
+      background: #f7fbff;
+      box-shadow: inset 0 0 0 9999px rgba(22, 119, 255, .02);
+    }
+
+    .table tbody tr:hover td:first-child {
+      border-left-color: var(--primary);
+    }
+
+    .table tbody tr.selected td {
+      background: #e6f4ff;
+    }
+
+    .table tbody tr.selected td:first-child {
+      border-left-color: var(--primary);
+    }
+
+    /* 选中样式完全由 JS 在 <tr> 上加/减 .selected 控制，移除 :has 以提升兼容性 */
+
+    .empty {
+      padding: 36px 24px;
+      text-align: center;
+      color: #999;
+      background: var(--bg);
+    }
+
+    .empty .icon {
+      font-size: 42px;
+      line-height: 1;
+      margin-bottom: 12px;
+      opacity: .6;
+    }
+
+    .empty .desc {
+      margin-bottom: 12px;
+    }
+
+    .empty .actions {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .right {
+      margin-left: auto;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    .btn.small {
+      height: 28px;
+      padding: 0 8px;
+      font-size: 12px;
+    }
+
+    /* modal */
+    .mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      width: 900px;
+      max-width: 92vw;
+      background: var(--bg);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+      overflow: hidden;
+    }
+
+    .modal header {
+      background: var(--bg);
+      color: var(--text);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal .body {
+      padding: 16px;
+      max-height: 70vh;
+      overflow: auto;
+      /* 允许弹窗内部滚动 */
+    }
+
+    .modal .footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+    }
+
+    .form {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .form input,
+    .form select,
+    .form textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .tags {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .link {
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* 行新增/删除 动画 */
+    @keyframes fadeInRow {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOutRow {
+      from {
+        opacity: 1;
+        height: var(--h, 42px);
+      }
+
+      to {
+        opacity: 0;
+        height: 0;
+      }
+    }
+
+    tr.row-add {
+      animation: fadeInRow .18s ease both;
+    }
+
+    tr.row-remove {
+      animation: fadeOutRow .18s ease both;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="row"><strong>Mock 规则配置</strong></div>
+    <div class="row">
+      <input id="search" class="search" placeholder="全局搜索：接口名字、接口地址" />
+      <label class="row" style="margin-right:8px">全局Mock
+        <span class="switch"><input id="globalSwitch" type="checkbox" /><span class="slider"></span></span>
+      </label>
+      <button id="btnExport" class="btn ghost small">导出</button>
+      <label class="btn primary small" for="importFile">导入</label>
+      <input id="importFile" type="file" accept=".json" style="display:none" />
+      <a href="records.html" class="btn ghost small" target="_self" style="flex:0 0 auto">请求记录</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="tabs" class="tabs"></div>
+
+    <div class="group-actions">
+      <button id="btnAddGroup" class="btn">新增分组</button>
+      <button id="btnEditGroup" class="btn">编辑分组</button>
+      <button id="btnAddRule" class="btn primary">添加</button>
+      <span id="countTip" class="muted"></span>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:60px">
+            <input id="headerSelect" class="checkbox" type="checkbox" title="选择全选/全不选" />
+          </th>
+          <th style="width:110px">
+            <label class="switch" title="开启全开/全关">
+              <input id="headerEnable" type="checkbox" />
+              <span class="slider"></span>
+            </label>
+          </th>
+          <th style="width:140px">Mock方式</th>
+          <th style="width:90px">请求方式</th>
+          <th style="width:160px">接口名称</th>
+          <th>接口地址</th>
+          <th style="width:100px">匹配方式</th>
+          <th style="width:100px">延迟时间</th>
+          <th style="width:180px">操作</th>
+        </tr>
+      </thead>
+      <tbody id="ruleTbody">
+        <tr>
+          <td colspan="9" class="empty">
+            <div class="icon">🗂️</div>
+            <div class="desc">当前分组暂无规则</div>
+            <div class="actions">
+              <button id="emptyAdd" class="btn primary">添加规则</button>
+              <button id="emptyImport" class="btn ghost">导入配置</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Group Modal -->
+  <div id="groupMask" class="mask">
+    <div class="modal">
+      <header class="row" style="justify-content:space-between">
+        <div id="groupTitle">编辑分组</div>
+        <div class="link" data-close="groupMask">关闭</div>
+      </header>
+      <div class="body">
+        <div class="form">
+          <label>组名</label><input id="g_label" placeholder="请输入组名" />
+          <label>网站域名</label><input id="g_domain" placeholder="多个域名以逗号隔开，例如：https://juejin.cn,http://localhost:8080" />
+          <label>Swagger DOC URL</label><input id="g_doc" placeholder="apiDocUrl，目前支持 swagger V2" />
+          <label>默认返回值</label><textarea id="g_wrapper" rows="6" placeholder="JSON 包装结构，可为空"></textarea>
+          <label>请求配置</label>
+          <div>
+            <div class="hint">请求头（JSON 对象，可为空）</div>
+            <textarea id="g_headers" rows="4" placeholder='{"Authorization":"Bearer ..."}'></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <button class="btn" data-close="groupMask">取消</button>
+        <button id="btnSaveGroup" class="btn primary">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rule Modal -->
+  <div id="ruleMask" class="mask">
+    <div class="modal">
+      <header class="row" style="justify-content:space-between">
+        <div id="ruleTitle">添加规则</div>
+        <div class="link" data-close="ruleMask">关闭</div>
+      </header>
+      <div class="body">
+        <div class="form">
+          <label>匹配方式</label>
+          <select id="r_filter">
+            <option value="contains">contains</option>
+            <option value="equals">equals</option>
+            <option value="regexp">regexp</option>
+          </select>
+          <label>请求方式</label>
+          <select id="r_method">
+            <option>GET</option>
+            <option>POST</option>
+            <option>PUT</option>
+            <option>DELETE</option>
+            <option>PATCH</option>
+            <option>OPTIONS</option>
+          </select>
+          <label>返回状态</label><input id="r_status" type="number" value="200" />
+          <label>延迟时间</label><input id="r_delay" type="number" value="0" />
+          <label>接口地址</label><input id="r_url" placeholder="/api/users 或 https://api.xxx.com/users" />
+          <label>接口名称</label><input id="r_name" placeholder="例如：User list" />
+          <label>Mock方式</label>
+          <select id="r_way">
+            <option value="normal">Modify API Response</option>
+            <option value="modifyHeaders">Modify Headers</option>
+            <option value="modifyRequestBody">Modify Request Body</option>
+            <option value="redirect">Redirect Request</option>
+            <option value="swagger">Swagger</option>
+          </select>
+          <label>请求体（POST/PUT 用）</label><textarea id="r_body" rows="4" placeholder='{"a":1}'></textarea>
+          <label>返回数据</label><textarea id="r_resp" rows="10" placeholder='{"code":200,"data":[]}'></textarea>
+          <label>Redirect URL</label><input id="r_redirect" placeholder="仅在 Redirect 下有效" />
+        </div>
+      </div>
+      <div class="footer">
+        <button class="btn" data-close="ruleMask">取消</button>
+        <button id="btnSaveRule" class="btn primary">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Move Rules Modal -->
+  <div id="moveMask" class="mask">
+    <div class="modal">
+      <header class="row" style="justify-content:space-between">
+        <div>移动规则至</div>
+        <div class="link" data-close="moveMask">关闭</div>
+      </header>
+      <div class="body">
+        <div class="form">
+          <label>目标分组</label>
+          <select id="moveGroupSelect"></select>
+        </div>
+      </div>
+      <div class="footer">
+        <button class="btn" data-close="moveMask">取消</button>
+        <button id="btnMoveOk" class="btn primary">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+
+</html>

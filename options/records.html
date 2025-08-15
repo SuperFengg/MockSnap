@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>请求记录</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      margin: 0;
+      padding: 0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: #1d1d1d;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #1677ff;
+      color: #1677ff;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .btn.danger {
+      border-color: #ff4d4f;
+      color: #ff4d4f;
+    }
+
+    .btn.primary {
+      background: #1677ff;
+      color: #fff;
+    }
+
+    /* 统一按钮体系 */
+    .btn:not(.primary):hover {
+      background: #f7fbff;
+    }
+
+    .btn.primary:hover {
+      background: #1677ff;
+      color: #fff;
+      filter: brightness(0.96);
+    }
+
+    .btn.danger:hover {
+      background: #fff1f0;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border-color: #d0e3ff;
+      color: #1677ff;
+    }
+
+    .btn.ghost:hover {
+      background: #eef5ff;
+      border-color: #1677ff;
+    }
+
+    .wrap {
+      padding: 16px;
+    }
+
+    .group-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 12px;
+      padding: 8px 0;
+      position: sticky;
+      top: 56px;
+      background: #fff;
+      z-index: 90;
+      border-bottom: 1px solid #f0f0f0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+      border-top: 1px solid #f0f0f0;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    tbody tr td:first-child {
+      position: relative;
+    }
+
+    /* 勾选图标去除，仅保留选中态色条与背景 */
+
+    tbody tr {
+      transition: background-color .2s ease, box-shadow .2s ease, border-left-color .2s ease;
+      border-left: 4px solid transparent;
+    }
+
+    tbody tr:hover {
+      background-color: #f5faff;
+    }
+
+    tbody tr.selected {
+      background-color: #e6f4ff;
+      border-left-color: #1677ff;
+      box-shadow: inset 0 1px 0 #dbeafe, inset 0 -1px 0 #dbeafe;
+    }
+
+    tbody tr {
+      transition: background-color .2s ease;
+    }
+
+    tbody tr:hover {
+      background-color: #fafafa;
+    }
+
+    tbody tr.selected {
+      background-color: #e6f4ff;
+    }
+
+    .url {
+      word-break: break-all;
+      font-size: 15px;
+    }
+
+    .muted {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .search {
+      padding: 6px 10px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      width: 360px;
+    }
+
+    .checkbox {
+      width: 16px;
+      height: 16px;
+    }
+
+    .flex {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #fff;
+    }
+
+    .badge.GET {
+      background: #52c41a;
+    }
+
+    .badge.POST {
+      background: #1677ff;
+    }
+
+    .badge.PUT {
+      background: #faad14;
+    }
+
+    .badge.DELETE {
+      background: #ff4d4f;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin: 6px 0;
+    }
+
+    /* tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid #e5e5e5;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+      position: sticky;
+      top: 56px;
+      /* 与 group-actions 对齐 */
+      background: #fff;
+      z-index: 80;
+      padding: 6px 0;
+    }
+
+    .tab-item {
+      padding: 8px 14px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 6px 6px 0 0;
+      user-select: none;
+      color: #555;
+      transition: all .2s ease;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tab-item:hover {
+      background: #f5f5f5;
+    }
+
+    .tab-item.active {
+      color: #1677ff;
+      background: #e6f4ff;
+      border-color: #1677ff;
+      box-shadow: inset 0 -2px 0 #1677ff;
+    }
+
+    .tab-badge {
+      display: inline-block;
+      margin-left: 8px;
+      min-width: 18px;
+      height: 18px;
+      line-height: 18px;
+      padding: 0 6px;
+      font-size: 12px;
+      border-radius: 9px;
+      background: #f0f5ff;
+      color: #1677ff;
+      text-align: center;
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .tab-badge.pulse {
+      transform: scale(1.15);
+      background: #e6f4ff;
+    }
+
+    .tab-item.active .tab-badge {
+      background: #1677ff;
+      color: #fff;
+    }
+
+    /* modal */
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      width: 800px;
+      max-width: 92vw;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .2);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .modal-title {
+      font-weight: 600;
+    }
+
+    .modal-close {
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 8px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .modal-tabs .tab-item {
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+    }
+
+    .modal-tabs .tab-item.active {
+      background: #1677ff;
+      color: #fff;
+      border-color: #1677ff;
+    }
+
+    .modal-body {
+      padding: 12px 16px;
+      max-height: 60vh;
+      overflow: auto;
+      /* 允许弹窗内部滚动 */
+    }
+
+    .modal-footer {
+      padding: 12px 16px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    /* column widths */
+    .col-method {
+      width: 88px;
+    }
+
+    .col-url {}
+
+    .col-time {
+      width: 240px;
+    }
+
+    .col-data {
+      width: 200px;
+    }
+
+    /* 表头 sticky（相对 table-wrap） */
+    .table-wrap {
+      position: relative;
+      overflow: auto;
+    }
+
+    .table-wrap thead th {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 1;
+    }
+
+    .table-wrap thead th.col-method input.select-all {
+      margin-left: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>请求记录</div>
+    <div class="controls">
+      <input id="search" class="search" type="text" placeholder="搜索：URL / 方法 / 内容" />
+      <button id="btnClearAll" class="btn danger">清空全部</button>
+      <button id="btnBack" class="btn ghost">返回配置</button>
+      <button id="btnSettings" class="btn ghost">设置</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="tabs" id="tabs"></div>
+    <div id="root"></div>
+  </div>
+  <!-- drawer -->
+  <div id="drawerMask" class="modal-mask" style="display:none;align-items:stretch;justify-content:flex-end;">
+    <div class="drawer"
+      style="width:420px;max-width:86vw;background:#fff;height:100%;box-shadow:-4px 0 16px rgba(0,0,0,.2);display:flex;flex-direction:column;">
+      <div class="modal-header"
+        style="padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;">
+        <div class="modal-title">拦截记录设置</div>
+        <div class="modal-close" id="drawerClose">×</div>
+      </div>
+      <div class="modal-body" style="padding:12px 16px;overflow:auto;flex:1;">
+        <div style="margin-bottom:12px;">
+          <div class="muted" style="margin:6px 0;">需要拦截的网站域名（每行一个，可写域名或完整地址；为空表示全部域名）</div>
+          <textarea id="setDomains" rows="6" style="width:100%;border:1px solid #d9d9d9;border-radius:6px;padding:8px;"
+            placeholder="example.com\nhttps://test.example.com"></textarea>
+        </div>
+        <div>
+          <div class="muted" style="margin:6px 0;display:flex;align-items:center;justify-content:space-between;">
+            <span>URL 过滤规则（为空表示全部 URL）</span>
+            <button id="btnAddUrlFilter" class="btn">新增一条</button>
+          </div>
+          <div id="urlFilters"></div>
+        </div>
+      </div>
+      <div class="modal-footer"
+        style="border-top:1px solid #f0f0f0;display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;">
+        <button id="drawerCancel" class="btn">取消</button>
+        <button id="drawerSave" class="btn primary">保存</button>
+      </div>
+    </div>
+  </div>
+  <div id="modal" class="modal-mask"></div>
+  <!-- choose group dialog -->
+  <div id="chooseGroupMask" class="modal-mask" style="display:none;align-items:center;justify-content:center;">
+    <div class="modal" style="width:520px;max-width:92vw;">
+      <div class="modal-header">
+        <div class="modal-title">选择分组</div>
+        <div class="modal-close" id="chooseGroupClose">×</div>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <div style="display:grid;grid-template-columns:100px 1fr;gap:10px;align-items:center;">
+          <label>目标分组</label>
+          <select id="chooseGroupSelect"
+            style="width:100%;padding:8px;border:1px solid #d9d9d9;border-radius:6px;"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="chooseGroupCancel">取消</button>
+        <button class="btn primary" id="chooseGroupOk">确定</button>
+      </div>
+    </div>
+  </div>
+  <script src="records.js"></script>
+</body>
+
+</html>
