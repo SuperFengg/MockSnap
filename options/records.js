@@ -233,13 +233,6 @@
       </table>
       </div>`;
 
-    // 行悬浮与选中样式（选中任意一列的 checkbox 即高亮整行）
-    $$('#root .item').forEach(box => {
-      const tr = box.closest('tr');
-      const sync = () => { if (box.checked) tr.classList.add('selected'); else tr.classList.remove('selected'); };
-      box.addEventListener('change', () => { sync(); const f = typeof updateHeaderSelectState === 'function' ? updateHeaderSelectState : null; f && f(); });
-      sync();
-    });
     // 选择框：全选/反选
     const headerSelect = $('#root .select-all');
     const updateHeaderSelectState = () => {
@@ -253,10 +246,35 @@
       const batchBtn = byId('btnBatchDeleteRecords');
       if (batchBtn) batchBtn.style.display = checked > 0 ? 'inline-flex' : 'none';
     };
+
+    // 行悬浮与选中样式（选中任意一列的 checkbox 即高亮整行）
+    $$('#root .item').forEach(box => {
+      const tr = box.closest('tr');
+      const sync = () => {
+        if (box.checked) tr.classList.add('selected');
+        else tr.classList.remove('selected');
+      };
+      box.addEventListener('change', () => {
+        sync();
+        updateHeaderSelectState();
+      });
+      sync();
+    });
+
     if (headerSelect) {
       headerSelect.addEventListener('change', () => {
         const all = $$('#root .item').filter(b => b.getAttribute('data-domain') === domain);
-        all.forEach(box => { box.checked = headerSelect.checked; box.dispatchEvent(new Event('change')); });
+        // 先设置所有勾选框状态，但不触发 change 事件
+        all.forEach(box => {
+          box.checked = headerSelect.checked;
+        });
+        // 手动更新行选中样式
+        all.forEach(box => {
+          const tr = box.closest('tr');
+          if (box.checked) tr.classList.add('selected');
+          else tr.classList.remove('selected');
+        });
+        // 最后更新表头状态
         updateHeaderSelectState();
       });
     }
